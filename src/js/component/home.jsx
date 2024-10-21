@@ -30,8 +30,15 @@ const Home = () => {
 		  setInputValue('');
 		}
 	  };
+	  const deleteTodo = (index) =>{
+		setTodo(oldTodos=>{
+			return (oldTodos.filter((_, i) => i !== index))
+		})
+	};
 
-	return (
+	  return (
+		
+		
 		<div className="text-center container mt-5" >
 			<h1>TO DO LIST</h1>
 		< ul className= "list-group">
@@ -43,8 +50,7 @@ const Home = () => {
         onKeyDown={enterKeyDown}
         placeholder={aviso(length)}
       />
-	  {todo.map((todos, index) => (<li className="list-group-item text-start ps-4" key={index} onMouseEnter={() => setHidden(false)}
-      onMouseLeave={() => setHidden(true)} >{todos}{hidden ? null : <button type="button" className="btn-close float-end " aria-label="Close"></button>}
+	  {todo.map((todos, index) => (<li className="list-group-item text-start ps-4" key={index} >{todos}<button type="button" className="btn-close float-end " aria-label="Close" onClick={() => deleteTodo(index)}></button>
 		</li>
         ))}
 		<li className="list-group-item list-group-item-light">

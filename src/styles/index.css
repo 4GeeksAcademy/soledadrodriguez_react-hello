@@ -3,6 +3,13 @@ h1{
     color: red;
 }
 
+button{
+    display: none;
+}
+.list-group-item:hover .btn-close{
+display: inline-block;
+
+}
 
 /* 
 
