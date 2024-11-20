@@ -1,64 +1,151 @@
-import React, {useState} from "react";
+import React, { useEffect, useState } from "react";
 
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
 
-//create your first component
+const urlbase = "https://playground.4geeks.com/todo"
+
+
 const Home = () => {
-	const [todo, setTodo] = useState([]);
-	const [inputValue, setInputValue] = useState('');
+	const [toDo, setToDo] = useState([]);
+	const [inputValue, setInputValue] = useState({
+		"label": "",
+		"is_done": false
+	});
 	const [hidden, setHidden] = useState(true);
 
-	let length = todo.length;
 
-	function aviso (numTareas) {
-		if (numTareas===0){
-			return "No hay tareas, añadir tareas"
-		}else{
-			return "Añadir nueva tarea"
+	async function getAllTask() {
+		try {
+			const response = await fetch(`${urlbase}/users/soledadrodriguez`)
+			let data = await response.json()
+			if (response.ok) {
+
+				setToDo(data.todos)
+			} else {
+				//create user
+				createUser()
+			}
+
+		} catch (error) {
+			console.log(error);
+
 		}
-
 	}
-	
-	const InputChange = (event) => {
-		setInputValue(event.target.value);
-	  };
-	
-	  const enterKeyDown = (event) => {
-		if (event.key === 'Enter' && inputValue) {
-		  setTodo([...todo, inputValue]);
-		  setInputValue('');
+
+	async function createUser() {
+		try {
+			const response = await fetch(`${urlbase}/users/soledadrodriguez`, {
+				method: "POST"
+			})
+
+			if (response.ok) {
+				getAllTask()
+			}
+
+		} catch (error) {
+			console.log(error)
 		}
-	  };
-	  const deleteTodo = (index) =>{
-		setTodo(oldTodos=>{
-			return (oldTodos.filter((_, i) => i !== index))
-		})
+	}
+
+	// function aviso(numTareas) {
+	// 	if (numTareas === 0) {
+	// 		return "No hay tareas, añadir tareas"
+	// 	} else {
+	// 		return "Añadir nueva tarea"
+	// 	}
+
+	// }
+
+	const inputChange = (event) => {
+		setInputValue({
+			...inputValue,
+			[event.target.name]: event.target.value
+		});
 	};
 
-	  return (
-		
-		
+	const enterKeyDown = async (event) => {
+		if (event.key === 'Enter' && inputValue && inputValue.label !== "") {
+			try {
+				let response = await fetch(`${urlbase}/todos/soledadrodriguez`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify(inputValue)
+				})
+				if (response.ok) {
+					getAllTask()
+					setInputValue({
+						"label": "",
+						"is_done": false
+					})
+				}
+			} catch (error) {
+				console.error(error);
+
+			}
+
+		}
+	};
+	const deleteTodo = async (index) => {
+		try {
+			let response = await fetch(`${urlbase}/todos/${index}`, {
+				method: "DELETE",
+			})
+			if (response.ok) {
+				getAllTask()
+			}
+		} catch (error) {
+			console.log(error);
+
+		}
+	};
+
+	const deleteUser = async () => {
+		try {
+			let response = await fetch(`${urlbase}/users/soledadrodriguez`, {
+				method: "DELETE",
+			})
+			if (response.ok) {
+				getAllTask()
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+
+	useEffect(() => { getAllTask() }, [])
+
+	return (
 		<div className="text-center container mt-5" >
 			<h1>TO DO LIST</h1>
-		< ul className= "list-group">
-		
-		<input className="list-group-item list-group-item-light"
-        type="text"
-        value={inputValue}
-        onChange={InputChange}
-        onKeyDown={enterKeyDown}
-        placeholder={aviso(length)}
-      />
-	  {todo.map((todos, index) => (<li className="list-group-item text-start ps-4" key={index} >{todos}<button type="button" className="btn-close float-end " aria-label="Close" onClick={() => deleteTodo(index)}></button>
-		</li>
-        ))}
-		<li className="list-group-item list-group-item-light">
-		<span className="float-start">{length} items left</span>
-		</li>
-			
-      </ul>
-		</div>
+			< ul className="list-group">
+
+				<input className="list-group-item list-group-item-light"
+					type="text"
+					value={inputValue.label}
+					onChange={inputChange}
+					name="label"
+					onKeyDown={enterKeyDown}
+					placeholder={"Ingrese una tarea"}
+				/>
+				{
+					toDo.map((tasks) => (
+						<li
+							className="list-group-item text-start ps-4"
+							key={tasks.id} >
+							{tasks.label}
+							< button type="button" className="btn-close float-end " aria-label="Close" onClick={() => deleteTodo(tasks.id)}></button>
+						</li>
+					))
+				}
+				<li className="list-group-item list-group-item-light">
+					<span className="float-start">{toDo.length} items left</span>
+					<button type="button" className="btn btn-warning float-end" onClick={() => deleteUser()}>Eliminar tareas</button>
+				</li>
+
+			</ul>
+		</div >
 	);
 
 };
